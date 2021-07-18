@@ -34,7 +34,7 @@ function showPage (list, page){
                      <span class="date">${list[i]['registered']['date']}</span>
                   </div>`
          li.innerHTML=html;
-         ul.appendChild(li)
+         ul.appendChild(li);
       }
    }
 }
@@ -56,7 +56,10 @@ function createButtons(list){
       li.appendChild(button);
       ul.appendChild(li);
    }
-   ul.firstElementChild.firstElementChild.className='active'
+
+   if(ul.firstElementChild){
+      ul.firstElementChild.firstElementChild.className='active'
+   }
 
    ul.addEventListener('click', (e) =>{
       if (event.target.tagName=='BUTTON'){
@@ -79,32 +82,48 @@ function createSearch(){
                   <span>Search by name</span>
                   <input id="search" placeholder="Search by name...">
                   <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
+                  <button type="button" alt="Clear Search" id="clear">Clear Search</button>
                </label>`
    form.innerHTML=html;
    header.appendChild(form); 
-   form.addEventListener('submit', (e) =>{
-      event.preventDefault();
-      const input=form.querySelector('input');
+   const input=form.querySelector('input')
 
-      const filteredSearch=search(input.value);
-      input.value='';
-
-      showPage(filteredSearch, 1);
-      createButtons(filteredSearch);
+   //CODE THIS AS AN ACTIONS OBJECT
+   form.addEventListener('submit', (e) => {
+      if(input.value){
+         event.preventDefault();
+         const filteredData=search(input.value);
+         input.value='';
+         showPage(filteredData, 1);
+         createButtons(filteredData);
+      }
+   });
+   form.addEventListener('input', (e) => {
+      //input.value='';
+      const filteredData=search(input.value);
+      showPage(filteredData, 1);
+      createButtons(filteredData);
+   });
+   form.addEventListener('click', (e) => {
+      if(event.target.parentNode.tagName=='BUTTON' && input.value){
+         event.preventDefault();
+         const filteredData=search(input.value);
+         input.value='';
+         showPage(filteredData, 1);
+         createButtons(filteredData);
+      }
    });
 }
 
+//searches the data array for any properties of the name object in each index which contain the search term
 function search(text){
    const filteredData=[]
    for(let i=0; i<data.length; i++){
-      let title=(data[i]['name']['title']).toUpperCase();
-      let firstName=(data[i]['name']['first']).toUpperCase();
-      let lastName=(data[i]['name']['last']).toUpperCase();
-   if(title.includes(text.toUpperCase()) ||
-      firstName.includes(text.toUpperCase()) ||
-      lastName.includes(text.toUpperCase())){
-         filteredData.push(data[i]);
-      }
+      let person=data[i];
+      let name=`${person.name.title.toUpperCase()} ${person.name.first.toUpperCase()} ${person.name.last.toUpperCase()}`;
+      if(name.includes(text.toUpperCase())){
+            filteredData.push(data[i]);
+         }
    }
    return filteredData;
 }
