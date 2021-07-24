@@ -70,14 +70,18 @@ header h2 {
   padding: 0px 5px;
   font-size: 14px;
   background-color: #1e90ff;
-  color: #fff;
+  color: #7eb0e2;;
 }
 
-.student-search button img {
+.student-search .clear-search {
+  color: #fff;
+  font-style: bold;
+  border: 2px solid rgb(11, 213, 240);
+}
+
+.student-search button img {  
   width: 25px;
 }
-
-
 
 .student-list {
   display: grid;
