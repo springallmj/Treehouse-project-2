@@ -3,11 +3,11 @@ Treehouse Techdegree:
 FSJS Project 2 - Data Pagination and Filtering
 */
 
+let filteredData=data;
 /*
 showPage() 
-
 */
-function showPage (list, page){
+function showPage(list, page){
    const liPerPage=9;
    const firstIndex=(page*liPerPage)-liPerPage;
    const lastIndex=(page*liPerPage)-1;
@@ -34,20 +34,15 @@ function showPage (list, page){
    }  
 }
 
-
 /*
 createButtons() will create and insert/append to the DOM the elements needed for the 
 required number of pagination buttons
 */
 function createButtons(list){
-   let numButtons;
-   if(list==-1){
-      numButtons=1;
-   }else{
-      numButtons=list.length/9;
-   }
    const ul=document.querySelector('.link-list');
    ul.innerHTML='';
+   let numButtons=list.length/9;
+
    for (let i=0; i<numButtons; i++){
       li=document.createElement('li');
       button=document.createElement('button');
@@ -60,23 +55,25 @@ function createButtons(list){
    if(ul.firstElementChild){
       ul.firstElementChild.firstElementChild.className='active'
    }
-
-   //navigation
+   //pagination button navigation
    ul.addEventListener('click', (e) =>{
       if (event.target.tagName=='BUTTON'){
-         const input=document.querySelector('input');
-         const currentActive=document.querySelector('.active');
-         const selected=event.target.parentNode;
-         currentActive.className='';
-         const filteredData=search(input.value);
-         selected.firstElementChild.className='active';
-         showPage(filteredData, selected.textContent);
+         if(filteredData!='undefined'){
+            const input=document.querySelector('input');
+            const prevActive=document.querySelector('.active');
+            const nextActive=event.target.parentNode;
+            prevActive.className='';
+            nextActive.firstElementChild.className='active';
+
+            showPage(filteredData, nextActive.textContent);
+         }
       }
    });
 }
 
 
 //Function creates the search form and inserts to page through DOM manipulation.
+//createSearch() holds all search functionality and event listeners to action user searches and filter Data array.
 function createSearch(){
    const header=document.querySelector('header');
    const form=document.createElement('form');
@@ -94,38 +91,41 @@ function createSearch(){
    /*displaySearch() is called within the Event handler for all 3 types of 'search' submission.
    This constitutes the main search parameters and displays the inserts the correct search filtered data 
    to the page and relative data pagination page numbers.
+   Primary search function search(text) is located outside of createSearch scope as brief identifies it as a seperate step
    */
    function displaySearch(event, searchValue){
-
       //filters only searches with results
-      if((search(searchValue))!=-1){
-         const filteredData=search(input.value);
+      if((search(searchValue))!='undefined'){
+         filteredData=search(input.value);
          showPage(filteredData, 1);
          createButtons(filteredData);
          clearSearch.className="clear-search";
          if (event.type=='submit' || event.target.parentNode.id=='search'){
             input.value='';
          }
-
-      //displays no result list item only
+      //displays no result list item only when search(text) function returns 'undefined'
       }else{
          clearSearch.className="clear-search";
          noResult();
+         //reset input field value when click or submit on no result search
          if (event.type=='submit' || event.target.parentNode.id=='search'){
             input.value='';
          }
       }
    }
 
+   //re-initialises filteredData array and resets page display
    function defaultData(){
+      filteredData=data;
       clearSearch.className="";
-      showPage(data, 1);
-      createButtons(data);
+      showPage(filteredData, 1);
+      createButtons(filteredData);
    }
 
-   //creates no result list item and appends to the main student list ul
+   //creates 'no result found' list item and appends to the main student ul
    function noResult(){
       const ul=document.querySelector('.student-list')
+      filteredData=[];
       ul.innerHTML='';
       const li=document.createElement('li');
       li.className="student-item cf";
@@ -134,7 +134,7 @@ function createSearch(){
                </div>`
       li.innerHTML=html;
       ul.appendChild(li);
-      createButtons(-1);
+      createButtons(filteredData);
    }
 
    form.addEventListener('submit', (e) => {
@@ -146,8 +146,7 @@ function createSearch(){
    form.addEventListener('input', (e) => {
       if(input.value!=""){
          displaySearch(event, input.value);
-      }
-      else{
+      }else{
          defaultData();
       }
    });
@@ -155,34 +154,36 @@ function createSearch(){
       if(event.target.parentNode.id=='search' && input.value!=""){
          displaySearch(event, input.value);
       }
-      if(event.target.id=='clear'){
+      if(event.target.id=='clear' && filteredData.length!=data.length){
          input.value='';
+         filteredData=data;
          defaultData();
       }
    });
 }
 
-
-
-//searches the data array for any properties of the name object in each index which contain the search term
+/*
+searches the main data array for matches to search term.
+Search is conducted on a string of combined name properties of each index within data array.
+Search is not case sensitive - search terms and name string converted to uppercase.
+*/
 function search(text){
-   const filteredData=[]
+   const filteredArray=[];
    for(let i=0; i<data.length; i++){
       let person=data[i];
       let name=`${person.name.title.toUpperCase()} ${person.name.first.toUpperCase()} ${person.name.last.toUpperCase()}`;
       if(name.includes(text.toUpperCase())){
-         filteredData.push(data[i]);
+         filteredArray.push(data[i]);
       }
    }
-   if(filteredData.length==0){
-      return -1;
+   if(filteredArray.length==0){
+      return 'undefined';
    }else{
-      return filteredData;
+      return filteredArray;
    }
 }
 
-
 // Main function call for page initialisation
-showPage(data, 1);
-createButtons(data);
+showPage(filteredData, 1);
+createButtons(filteredData);
 createSearch();
